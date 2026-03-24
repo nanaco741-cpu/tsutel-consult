@@ -60,14 +60,17 @@
     </div>
 
     <script>
-        document.getElementById('generateBtn').addEventListener('click', async () => {
-            const profession = document.getElementById('userProfession').value.trim();
-            const passion = document.getElementById('userMessage').value.trim();
-            const statusBox = document.getElementById('statusMessage');
-            const resultBox = document.getElementById('aiResult');
-            const resultContent = document.getElementById('aiResultContent');
-            const loading = document.getElementById('loading');
-            const btn = document.getElementById('generateBtn');
+        const btn = document.getElementById('generateBtn');
+        const professionInput = document.getElementById('userProfession');
+        const passionInput = document.getElementById('userMessage');
+        const statusBox = document.getElementById('statusMessage');
+        const resultBox = document.getElementById('aiResult');
+        const resultContent = document.getElementById('aiResultContent');
+        const loading = document.getElementById('loading');
+
+        btn.addEventListener('click', async () => {
+            const profession = professionInput.value.trim();
+            const passion = passionInput.value.trim();
 
             if (!profession || !passion) {
                 statusBox.innerText = "項目をすべて入力してくださいね！";
@@ -81,10 +84,42 @@
             btn.disabled = true;
 
             try {
-                const res = await fetch("./api/gemini", {
+                const response = await fetch("./api/gemini", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt: profession + "の方が「" + passion + "」という想いを伝えるための、心に刺さる4コマ漫画の構成案を作成してください。" })
+                    body: JSON.stringify({ 
+                        prompt: profession + "の方が「" + passion + "」という想いを伝えるための4コマ漫画構成案を作成してください。" 
+                    })
                 });
 
-                if (!res.ok) throw new Error("サーバー応答エラー(" + res.status + ")");
+                const data = await response.json();
+
+                // データの抽出 (最も安全な書き方)
+                let storyText = "";
+                if (data && data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts) {
+                    storyText = data.candidates.content.parts.text;
+                }
+
+                if (storyText) {
+                    resultContent.innerText = storyText;
+                    resultBox.classList.remove('hidden');
+                    resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    statusBox.innerText = "AIからの回答が読み取れませんでした。もう一度お試しください。";
+                    statusBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                statusBox.innerText = "通信エラーが発生しました。";
+                statusBox.classList.remove('hidden');
+            } finally {
+                loading.classList.add('hidden');
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('lineBtn').addEventListener('click', () => {
+            window.location.href = "https://line.me/R/ti/p/@039irhdw";
+        });
+    </script>
+</body>
+</html>
