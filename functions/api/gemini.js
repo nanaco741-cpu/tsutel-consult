@@ -3,14 +3,14 @@ export async function onRequestPost(context) {
     const { prompt } = await context.request.json();
     const apiKey = context.env.GEMINI_API_KEY;
 
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    // ミカさんの環境で成功が確認された 2.5 Flash を使用
+    const url = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=" + apiKey;
 
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        // 安全フィルターを解除し、AIが途中で回答を止めるのを防ぎます
         safetySettings: [
           { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
           { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
@@ -22,21 +22,23 @@ export async function onRequestPost(context) {
 
     const data = await response.json();
 
-    // 正常な回答がある場合、テキストのみを抽出
-    if (data.candidates && data.candidates && data.candidates.content) {
-      return new Response(JSON.stringify({ text: data.candidates.content.parts.text }), {
+    // エラーがある場合はその理由を返す
+    if (data.error) {
+      return new Response(JSON.stringify({ text: "Google Error: " + data.error.message }));
+    }
+
+    // 回答テキストを確実に抽出（旧式で安全なチェック）
+    if (data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts && data.candidates.content.parts) {
+      const aiResponseText = data.candidates.content.parts.text;
+      return new Response(JSON.stringify({ text: aiResponseText }), {
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    // 安全フィルターで止まった場合のメッセージ
-    if (data.candidates && data.candidates && data.candidates.finishReason === "SAFETY") {
-        return new Response(JSON.stringify({ text: "AIが内容を確認中です。表現を少し変えてもう一度お試しください。" }));
-    }
-
-    return new Response(JSON.stringify({ text: "診断に失敗しました。もう一度「AI診断」ボタンを押してください。" }));
+    // AIが安全上の理由等で回答を空にした場合
+    return new Response(JSON.stringify({ text: "AIが回答を控えました。別の表現で試してみてください。" }));
 
   } catch (e) {
-    return new Response(JSON.stringify({ text: "サーバーエラーが発生しました。" }), { status: 500 });
+    return new Response(JSON.stringify({ text: "通信に失敗しました。時間をおいてお試しください。" }), { status: 500 });
   }
 }
