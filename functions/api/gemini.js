@@ -14,21 +14,19 @@ export async function onRequestPost(context) {
 
     const data = await response.json();
 
-    // ★ ミカさんが見つけた「構造」を、ここで1つずつ分解して取り出します
-    if (data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts && data.candidates.content.parts) {
-      
-      // ここで、ついに「はい、承知いたしました...」の文字が変数に入ります
+    // 【修正ポイント】 を確実に指定し、1段ずつ丁寧に中身を確認します
+    if (data && data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts && data.candidates.content.parts) {
       const aiResponseText = data.candidates.content.parts.text;
-
       return new Response(JSON.stringify({ text: aiResponseText }), {
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    // もし構造が違った場合の「最終手段」：生データをそのまま出して原因を暴く
-    return new Response(JSON.stringify({ text: "解析エラー：" + JSON.stringify(data) }));
+    // もしデータ構造が違った場合、原因を特定するために生データを少しだけ出します
+    const debugInfo = data.error ? data.error.message : "Structure Error";
+    return new Response(JSON.stringify({ text: "解析エラー：" + debugInfo }));
 
   } catch (e) {
-    return new Response(JSON.stringify({ text: "サーバーエラー：" + e.message }), { status: 500 });
+    return new Response(JSON.stringify({ text: "接続失敗：" + e.message }), { status: 500 });
   }
 }
