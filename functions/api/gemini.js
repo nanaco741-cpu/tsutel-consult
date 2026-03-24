@@ -3,11 +3,6 @@ export async function onRequestPost(context) {
     const { prompt } = await context.request.json();
     const apiKey = context.env.GEMINI_API_KEY;
 
-    // キーが読み込めているかまずチェック
-    if (!apiKey) {
-      return new Response(JSON.stringify({ text: "エラー：Cloudflare側でAPIキーが認識されていません。設定画面を確認してください。" }));
-    }
-
     const url = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=" + apiKey;
 
     const response = await fetch(url, {
@@ -18,14 +13,17 @@ export async function onRequestPost(context) {
 
     const data = await response.json();
 
-    // 成功・失敗に関わらず、Googleからの返信をすべて画面に出します
-    return new Response(JSON.stringify({ 
-      text: "【Googleからの生返信】" + JSON.stringify(data) 
-    }), {
-      headers: { "Content-Type": "application/json" }
-    });
+    // 先ほどの生データから、物語のテキストだけを確実に抜き出します
+    if (data && data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts) {
+      const aiStory = data.candidates.content.parts.text;
+      return new Response(JSON.stringify({ text: aiStory }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    return new Response(JSON.stringify({ text: "AIが物語を構成できませんでした。もう一度お試しください。" }));
 
   } catch (e) {
-    return new Response(JSON.stringify({ text: "接続エラー：" + e.message }), { status: 500 });
+    return new Response(JSON.stringify({ text: "接続エラーが発生しました。" }), { status: 500 });
   }
 }
