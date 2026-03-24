@@ -59,66 +59,63 @@
         </button>
     </div>
 
+    <!-- 修正版スクリプト -->
     <script>
-        document.getElementById('generateBtn').addEventListener('click', async () => {
-            // 1. まずクリックが反応するかアラート（動作確認後に消してもOK）
-            console.log("診断ボタンが押されました");
+    document.getElementById('generateBtn').addEventListener('click', async () => {
+        console.log("診断ボタンが押されました");
 
-            const profession = document.getElementById('userProfession').value.trim();
-            const passion = document.getElementById('userMessage').value.trim();
-            const statusBox = document.getElementById('statusMessage');
-            const resultBox = document.getElementById('aiResult');
-            const resultContent = document.getElementById('aiResultContent');
-            const loading = document.getElementById('loading');
-            const btn = document.getElementById('generateBtn');
+        const profession = document.getElementById('userProfession').value.trim();
+        const passion = document.getElementById('userMessage').value.trim();
+        const statusBox = document.getElementById('statusMessage');
+        const resultBox = document.getElementById('aiResult');
+        const resultContent = document.getElementById('aiResultContent');
+        const loading = document.getElementById('loading');
+        const btn = document.getElementById('generateBtn');
 
-            if (!profession || !passion) {
-                statusBox.innerText = "項目をすべて入力してくださいね！";
-                statusBox.classList.remove('hidden');
-                return;
-            }
+        if (!profession || !passion) {
+            statusBox.innerText = "項目をすべて入力してくださいね！";
+            statusBox.classList.remove('hidden');
+            return;
+        }
 
-            statusBox.classList.add('hidden');
-            resultBox.classList.add('hidden');
-            loading.classList.remove('hidden');
-            btn.disabled = true;
+        statusBox.classList.add('hidden');
+        resultBox.classList.add('hidden');
+        loading.classList.remove('hidden');
+        btn.disabled = true;
 
-            try {
-                const res = await fetch("./api/gemini", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        prompt: profession + "の方が「" + passion + "」という想いを伝えるための、心に刺さる4コマ漫画の構成案を作成してください。" 
-                    })
-                });
+        try {
+            const res = await fetch("./api/gemini", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    prompt: profession + "の方が「" + passion + "」という想いを伝えるための、心に刺さる4コマ漫画の構成案を作成してください。" 
+                })
+            });
 
-                // ChatGPT指摘：APIが動いているかチェック
-                if (!res.ok) {
-                    throw new Error("サーバー側(API)の準備ができていないようです。ステータス: " + res.status);
-                }
+            if (!res.ok) throw new Error("サーバー側(API)の準備ができていません。ステータス: " + res.status);
 
-                const data = await res.json();
-                
-                // ChatGPT指摘：正しい階層からテキストを取得
-                const text = data?.candidates?.?.content?.parts?.?.text || "AIからの回答がありませんでした";
+            const data = await res.json();
 
-                resultContent.innerText = text;
-                resultBox.classList.remove('hidden');
-                resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Gemini APIに合わせた正しいテキスト取得
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "AIからの回答がありません";
 
-            } catch (e) {
-                statusBox.innerText = "エラー: " + e.message;
-                statusBox.classList.remove('hidden');
-                console.error(e);
-            } finally {
-                loading.classList.add('hidden');
-                btn.disabled = false;
-            }
-        });
+            resultContent.innerText = text;
+            resultBox.classList.remove('hidden');
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-        document.getElementById('lineBtn').addEventListener('click', () => {
-            window.location.href = "https://line.me/R/ti/p/@039irhdw";
-        });
+        } catch (e) {
+            statusBox.innerText = "エラー: " + e.message;
+            statusBox.classList.remove('hidden');
+            console.error(e);
+        } finally {
+            loading.classList.add('hidden');
+            btn.disabled = false;
+        }
+    });
+
+    document.getElementById('lineBtn').addEventListener('click', () => {
+        window.location.href = "https://line.me/R/ti/p/@039irhdw";
+    });
     </script>
 </body>
 </html>
