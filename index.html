@@ -86,11 +86,24 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ prompt: profession + "の方が「" + passion + "」という想いを伝えるための、心に刺さる4コマ漫画の構成案を作成してください。" })
                 });
+
+                if (!res.ok) throw new Error("サーバー応答エラー");
+
                 const data = await res.json();
-                resultContent.innerText = data.text;
-                resultBox.classList.remove('hidden');
-                resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // 【ChatGPTの魔法を採用】深い階層(data.candidates...)から安全に抜き出します
+                // サーバー側で data.text に加工されている場合と、生データのままの場合の両方に対応
+                const text = data.text || data?.candidates?.?.content?.parts?.?.text;
+
+                if (text) {
+                    resultContent.innerText = text;
+                    resultBox.classList.remove('hidden');
+                    resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    throw new Error("回答の解析に失敗しました");
+                }
             } catch (e) {
+                console.error(e);
                 statusBox.innerText = "エラーが発生しました。もう一度お試しください。";
                 statusBox.classList.remove('hidden');
             } finally {
