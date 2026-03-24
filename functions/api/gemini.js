@@ -4,14 +4,11 @@ export async function onRequestPost(context) {
     const apiKey = context.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      return new Response(JSON.stringify({ text: "エラー：APIキーが設定されていません。" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" }
-      });
+      return new Response(JSON.stringify({ text: "エラー：APIキーが設定されていません。" }), { status: 500 });
     }
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -22,21 +19,19 @@ export async function onRequestPost(context) {
     );
 
     const data = await response.json();
-    
-    // 安全な取り出し方（?.を使わない）
-    let aiText = "AIからの応答が空でした。";
-    if (data && data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts && data.candidates.content.parts) {
-        aiText = data.candidates.content.parts.text;
-    }
 
-    return new Response(JSON.stringify({ text: aiText }), {
-      headers: { "Content-Type": "application/json" }
-    });
+    // 応答の解析（安全な旧式チェック）
+    if (data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts && data.candidates.content.parts) {
+        return new Response(JSON.stringify({ text: data.candidates.content.parts.text }), {
+            headers: { "Content-Type": "application/json" }
+        });
+    } 
+    
+    // 安全フィルターなどでブロックされた場合
+    const errorMsg = data.error ? data.error.message : "AIが回答を控えました。別の表現で試してください。";
+    return new Response(JSON.stringify({ text: "【判定エラー】" + errorMsg }), { status: 200 });
 
   } catch (e) {
-    return new Response(JSON.stringify({ text: "サーバーエラーが発生しました。" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
+    return new Response(JSON.stringify({ text: "通信失敗：" + e.message }), { status: 500 });
   }
 }
