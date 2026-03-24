@@ -15,15 +15,15 @@ export async function onRequestPost(context) {
     const data = await response.json();
 
     if (data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts && data.candidates.content.parts) {
-      const resultText = data.candidates.content.parts.text;
-      return new Response(JSON.stringify({ text: resultText }), {
+      const aiText = data.candidates.content.parts.text;
+      return new Response(JSON.stringify({ text: aiText }), {
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    return new Response(JSON.stringify({ text: "AI_ERROR_EMPTY_RESPONSE" }), { status: 200 });
+    return new Response(JSON.stringify({ text: "AIからの応答が空でした。内容を少し変えてお試しください。" }));
 
   } catch (e) {
-    return new Response(JSON.stringify({ text: "SERVER_ERROR" }), { status: 500 });
+    return new Response(JSON.stringify({ text: "サーバーエラーが発生しました。" }), { status: 500 });
   }
 }
