@@ -29,9 +29,12 @@ body { font-family: 'Noto Sans JP', sans-serif; background-color: #f0f4f8; }
 
     <div id="loading" class="hidden mt-3 text-center">
         <div class="inline-block w-6 h-6 border-4 border-[#005088] border-t-transparent rounded-full spin"></div>
+        <p class="text-[11px] text-slate-400 mt-1 font-bold">AIが構成中...</p>
     </div>
     <div id="statusMessage" class="hidden mt-3 text-red-600 text-sm text-center"></div>
-    <div id="aiResult" class="hidden mt-3 p-4 bg-slate-900 text-white rounded-lg text-sm whitespace-pre-wrap"></div>
+    <div id="aiResult" class="hidden mt-3 p-4 bg-slate-900 text-white rounded-lg text-sm whitespace-pre-wrap">
+        <p class="text-[10px] text-slate-400 italic mt-2">※AIによる下書きです。詳細は相談で磨きましょう！</p>
+    </div>
 </section>
 </main>
 
@@ -48,7 +51,7 @@ btn.addEventListener('click', async () => {
     const result = document.getElementById('aiResult');
     const loading = document.getElementById('loading');
 
-    if(!prof || !msg) {
+    if(!prof || !msg){
         status.innerText = "項目を入力してください";
         status.classList.remove('hidden');
         return;
@@ -64,7 +67,7 @@ btn.addEventListener('click', async () => {
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify({
-                prompt: `${prof}が「${msg}」を伝える4コマを作成。40文字以内、挨拶禁止、解説禁止`
+                prompt: `${prof}が「${msg}」を伝える4コマ漫画を作成。各コマ40文字以内、挨拶禁止、解説禁止`
             })
         });
         if(!res.ok) throw new Error("API未応答 "+res.status);
