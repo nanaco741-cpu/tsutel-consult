@@ -3,13 +3,19 @@ export async function onRequestPost(context) {
     const { prompt } = await context.request.json();
     const apiKey = context.env.GEMINI_API_KEY;
 
-    // ★ 最新の住所（v1）です
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    if (!apiKey) {
+      return new Response(JSON.stringify({ text: "エラー：APIキーが設定されていません。" }), { status: 500 });
+    }
+
+    // ★ 2026年の標準モデル ID：gemini-2.5-flash を指定します
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
     });
 
     const data = await response.json();
@@ -20,8 +26,8 @@ export async function onRequestPost(context) {
       });
     }
 
-    // 【チェックポイント】このメッセージが出れば「新コード」が動いています！
-    return new Response(JSON.stringify({ text: "★新コード反映済み★：" + JSON.stringify(data) }), {
+    // 万が一エラーの場合の診断用
+    return new Response(JSON.stringify({ text: "★AIエラー詳細★：" + JSON.stringify(data) }), {
       headers: { "Content-Type": "application/json" }
     });
 
