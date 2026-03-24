@@ -3,15 +3,15 @@ export async function onRequestPost(context) {
     const { prompt } = await context.request.json();
     const apiKey = context.env.GEMINI_API_KEY;
 
-    // 【診断1】Cloudflareからキーが渡されているか
     if (!apiKey) {
-      return new Response(JSON.stringify({ text: "【診断結果】Cloudflareの環境変数『GEMINI_API_KEY』が設定されていません。名前を再確認してください。" }), {
+      return new Response(JSON.stringify({ text: "エラー：APIキーが設定されていません。" }), {
+        status: 500,
         headers: { "Content-Type": "application/json" }
       });
     }
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -22,22 +22,15 @@ export async function onRequestPost(context) {
     );
 
     const data = await response.json();
+    const aiText = data.candidates?.?.content?.parts?.?.text || "応答が得られませんでした。";
 
-    // 【診断2】Google側からエラーが返った場合
-    if (!response.ok) {
-      return new Response(JSON.stringify({ text: `【Google APIエラー】${data.error?.message || "原因不明のエラーです"}` }), {
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-
-    return new Response(JSON.stringify({
-      text: data.candidates?.?.content?.parts?.?.text || "応答が空でした"
-    }), {
+    return new Response(JSON.stringify({ text: aiText }), {
       headers: { "Content-Type": "application/json" }
     });
 
   } catch (e) {
-    return new Response(JSON.stringify({ text: `【システムエラー】${e.message}` }), {
+    return new Response(JSON.stringify({ text: "サーバーエラーが発生しました。" }), {
+      status: 500,
       headers: { "Content-Type": "application/json" }
     });
   }
