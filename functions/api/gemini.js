@@ -2,16 +2,19 @@ export async function onRequestPost(context) {
   try {
     const { prompt } = await context.request.json();
     const apiKey = context.env.GEMINI_API_KEY;
+
     const url = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=" + apiKey;
 
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        // システム指示を追加して、AIに役割を自覚させます
         system_instruction: {
-          parts: [{ text: "あなたはプロのマンガ名刺プロデューサーです。業種と想いから集客に役立つ4コマ漫画案を提案してください。" }]
+          parts: [{ text: "あなたはプロのマンガ名刺プロデューサーです。ユーザーの業種と想いをもとに、集客に役立つ4コマ漫画の構成案を提案してください。" }]
         },
         contents: [{ parts: [{ text: prompt }] }],
+        // 安全フィルターを限界まで緩和します
         safetySettings: [
           { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
           { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
@@ -23,16 +26,19 @@ export async function onRequestPost(context) {
 
     const data = await response.json();
 
+    // 回答テキストの抽出（最も安全な旧式チェック）
     if (data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts && data.candidates.content.parts) {
-      return new Response(JSON.stringify({ text: data.candidates.content.parts.text }), {
+      const aiText = data.candidates.content.parts.text;
+      return new Response(JSON.stringify({ text: aiText }), {
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    const reason = (data.candidates && data.candidates) ? data.candidates.finishReason : "不明";
-    return new Response(JSON.stringify({ text: "AIが回答を控えました。理由: " + reason }));
+    // それでもダメな場合
+    const reason = data.candidates && data.candidates ? data.candidates.finishReason : "不明";
+    return new Response(JSON.stringify({ text: "AIが考え中、または少し休憩が必要です。別の表現で試してみてください。（理由: " + reason + "）" }));
 
   } catch (e) {
-    return new Response(JSON.stringify({ text: "接続に失敗しました。もう一度お試しください。" }), { status: 500 });
+    return new Response(JSON.stringify({ text: "エラーが発生しました。時間をおいてお試しください。" }), { status: 500 });
   }
 }
