@@ -13,18 +13,12 @@ export async function onRequestPost(context) {
     });
 
     const data = await response.json();
-
-    // 先ほどの「解析エラー」の中に表示されていた「宝の山」から、物語だけを抽出
-    if (data && data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts && data.candidates.content.parts) {
-      const finalStory = data.candidates.content.parts.text;
-      return new Response(JSON.stringify({ text: finalStory }), {
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-
-    return new Response(JSON.stringify({ text: "AIが物語を構成できませんでした。もう一度お試しください。" }));
+    // Googleからの生データをそのままフロントエンドに返します
+    return new Response(JSON.stringify(data), {
+      headers: { "Content-Type": "application/json" }
+    });
 
   } catch (e) {
-    return new Response(JSON.stringify({ text: "サーバーエラーが発生しました。" }), { status: 500 });
+    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
