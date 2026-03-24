@@ -8,40 +8,24 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
         body { font-family: 'Noto Sans JP', sans-serif; background-color: #f8fafc; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .animate-spin-custom { animation: spin 1s linear infinite; }
     </style>
 </head>
 <body class="text-slate-800 pb-32">
-
-    <header class="bg-[#005088] text-white py-12 px-6 text-center">
+    <header class="bg-[#005088] text-white py-12 text-center">
         <h1 class="text-2xl font-black">AIコンセプト診断</h1>
     </header>
-
-    <main class="max-w-md mx-auto px-4 -mt-8 space-y-6">
+    <main class="max-w-md mx-auto px-4 -mt-8">
         <section class="bg-white rounded-3xl shadow-xl p-8 border-t-4 border-amber-400">
             <div id="statusMessage" class="hidden p-4 rounded-xl text-xs font-bold text-center mb-6 bg-red-100 text-red-700"></div>
-
             <div class="space-y-6">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">業種</label>
-                    <input id="userProfession" type="text" placeholder="例：経営コンサルタント" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">伝えたい想い</label>
-                    <textarea id="userMessage" rows="3" placeholder="例：お客様を笑顔にしたい" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none"></textarea>
-                </div>
-                <button id="generateBtn" class="w-full bg-[#005088] text-white py-4 rounded-xl font-black shadow-lg flex items-center justify-center gap-2">
-                    <span id="btnText">AI診断をスタートする</span>
-                </button>
+                <input id="userProfession" type="text" placeholder="業種を入力" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                <textarea id="userMessage" rows="3" placeholder="伝えたい想いを入力" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm"></textarea>
+                <button id="generateBtn" class="w-full bg-[#005088] text-white py-4 rounded-xl font-black shadow-lg">AI診断をスタートする</button>
             </div>
-
             <div id="loading" class="mt-8 hidden text-center">
-                <div class="inline-block w-8 h-8 border-4 border-[#005088] border-t-transparent rounded-full animate-spin-custom"></div>
-                <p class="text-xs text-slate-400 mt-2">AIが構成案を作成中...</p>
+                <p class="text-xs text-slate-400">AIが作成中...</p>
             </div>
-
-            <div id="aiResult" class="mt-8 hidden space-y-4">
+            <div id="aiResult" class="mt-8 hidden">
                 <div class="p-6 bg-slate-900 text-white rounded-2xl border-l-4 border-amber-400 shadow-xl">
                     <div id="aiResultContent" class="text-sm leading-relaxed whitespace-pre-wrap"></div>
                 </div>
@@ -50,7 +34,7 @@
     </main>
 
     <script>
-        async function generateAIConcept() {
+        document.getElementById('generateBtn').addEventListener('click', async () => {
             const profession = document.getElementById('userProfession').value.trim();
             const passion = document.getElementById('userMessage').value.trim();
             const statusBox = document.getElementById('statusMessage');
@@ -58,45 +42,35 @@
             const resultContent = document.getElementById('aiResultContent');
             const loading = document.getElementById('loading');
             const btn = document.getElementById('generateBtn');
-            const btnText = document.getElementById('btnText');
 
             if (!profession || !passion) {
-                statusBox.innerText = "項目をすべて入力してくださいね！";
+                statusBox.innerText = "すべて入力してください！";
                 statusBox.classList.remove('hidden');
                 return;
             }
 
             statusBox.classList.add('hidden');
             resultBox.classList.add('hidden');
-            btn.disabled = true;
-            btnText.innerText = "思考中...";
             loading.classList.remove('hidden');
+            btn.disabled = true;
 
             try {
                 const response = await fetch("./api/gemini", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt: `${profession}の人が「${passion}」を伝える4コマ漫画の案を作成して。` })
+                    body: JSON.stringify({ prompt: `${profession}の人が「${passion}」を伝える4コマ漫画の案を考えて。` })
                 });
-
-                if (!response.ok) throw new Error("通信エラーが発生しました。");
-
                 const data = await response.json();
                 resultContent.innerText = data.text;
                 resultBox.classList.remove('hidden');
-                resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
             } catch (error) {
-                statusBox.innerText = error.message;
+                statusBox.innerText = "エラーが発生しました。";
                 statusBox.classList.remove('hidden');
             } finally {
-                btn.disabled = false;
-                btnText.innerText = "AI診断をスタートする";
                 loading.classList.add('hidden');
+                btn.disabled = false;
             }
-        }
-
-        document.getElementById('generateBtn').addEventListener('click', generateAIConcept);
+        });
     </script>
 </body>
 </html>
