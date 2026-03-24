@@ -11,105 +11,83 @@
         body { font-family: 'Noto Sans JP', sans-serif; background-color: #f0f4f8; }
         .fade-in { animation: fadeIn 0.6s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-spin-custom { animation: spin 1s linear infinite; }
+        .spin-custom { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="text-slate-800 pb-32">
-
+<body class="pb-32 text-slate-800">
     <header class="bg-[#005088] text-white pt-16 pb-24 px-6 text-center relative overflow-hidden">
-        <div class="relative z-10">
-            <h1 class="text-3xl font-black mb-2 tracking-tight">AIコンセプト診断</h1>
-            <p class="text-[10px] opacity-70 tracking-[0.2em] font-bold uppercase">Manga Business Card Workshop</p>
-        </div>
+        <h1 class="text-3xl font-black tracking-tight">AIコンセプト診断</h1>
+        <p class="text-[10px] opacity-70 font-bold uppercase tracking-widest mt-2">Manga Card Workshop</p>
         <div class="absolute bottom-0 left-0 w-full h-12 bg-white rounded-t-[3rem]"></div>
     </header>
 
     <main class="max-w-md mx-auto px-6 -mt-16 space-y-8 relative z-20">
         <section class="bg-white rounded-[2.5rem] shadow-2xl p-8 border-t-8 border-amber-400 fade-in">
-            <div id="statusMessage" class="hidden p-4 rounded-2xl text-xs font-bold text-center mb-6 bg-red-50 text-red-600 border border-red-100"></div>
-
-            <div class="space-y-8">
+            <div id="statusMessage" class="hidden p-4 rounded-xl text-xs font-bold text-center mb-6 bg-red-50 text-red-600"></div>
+            <div class="space-y-6">
                 <div>
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 ml-1">業種</label>
-                    <input id="userProfession" type="text" placeholder="例：経営コンサルタント" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-[#005088] focus:bg-white outline-none transition-all">
+                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">業種</label>
+                    <input id="userProfession" type="text" placeholder="例：整体師" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-[#005088] outline-none transition-all">
                 </div>
                 <div>
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 ml-1">伝えたい想い</label>
-                    <textarea id="userMessage" rows="3" placeholder="例：誰にも負けない技術でお客様を笑顔にしたい" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-[#005088] focus:bg-white outline-none transition-all"></textarea>
+                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">伝えたい想い</label>
+                    <textarea id="userMessage" rows="3" placeholder="例：お客様を笑顔にしたい" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-[#005088] outline-none transition-all"></textarea>
                 </div>
-                <button id="generateBtn" class="w-full bg-[#005088] text-white py-5 rounded-2xl font-black shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span id="btnText">AI診断をスタートする</span>
-                </button>
+                <button id="generateBtn" class="w-full bg-[#005088] text-white py-5 rounded-2xl font-black shadow-lg active:scale-95 transition-all">AI診断をスタートする</button>
             </div>
-
-            <div id="loading" class="mt-12 hidden text-center">
-                <div class="inline-block w-10 h-10 border-4 border-[#005088] border-t-transparent rounded-full animate-spin-custom"></div>
-                <p class="text-[11px] text-slate-400 mt-4 font-bold tracking-widest">三神AIが物語を構成中...</p>
+            <div id="loading" class="mt-8 hidden text-center">
+                <div class="inline-block w-8 h-8 border-4 border-[#005088] border-t-transparent rounded-full spin-custom"></div>
+                <p class="text-[11px] text-slate-400 mt-2 font-bold">三神AIが構成案を練っています...</p>
             </div>
-
-            <div id="aiResult" class="mt-12 hidden space-y-6 fade-in">
-                <div class="p-8 bg-slate-900 text-white rounded-[2rem] relative shadow-2xl">
-                    <div id="aiResultContent" class="text-sm leading-relaxed whitespace-pre-wrap font-medium"></div>
+            <div id="aiResult" class="mt-8 hidden">
+                <div class="p-8 bg-slate-900 text-white rounded-[2rem] shadow-2xl">
+                    <div id="aiResultContent" class="text-sm leading-relaxed whitespace-pre-wrap"></div>
                 </div>
-                <p class="text-[10px] text-slate-400 text-center font-bold">※これはAIによる下書きです。詳細は無料相談で磨き上げましょう！</p>
             </div>
         </section>
     </main>
 
     <div class="fixed bottom-6 left-0 w-full px-6 z-50">
-        <button id="lineBtn" class="max-w-md mx-auto bg-[#06C755] text-white w-full py-5 rounded-full font-black shadow-2xl flex items-center justify-center gap-4 active:scale-95 transition-all border-4 border-white">
+        <button id="lineBtn" class="max-w-md mx-auto bg-[#06C755] text-white w-full py-5 rounded-full font-black shadow-2xl flex items-center justify-center gap-4 border-4 border-white active:scale-95 transition-all">
             <i class="fa-brands fa-line text-2xl"></i>
-            <span class="text-lg tracking-tighter">無料で三神に相談する</span>
+            <span class="text-lg">無料で三神に相談する</span>
         </button>
     </div>
 
     <script>
-        const lineId = "@039irhdw";
-
         document.getElementById('generateBtn').addEventListener('click', async () => {
             const profession = document.getElementById('userProfession').value.trim();
             const passion = document.getElementById('userMessage').value.trim();
-            const statusBox = document.getElementById('statusMessage');
             const resultBox = document.getElementById('aiResult');
             const resultContent = document.getElementById('aiResultContent');
             const loading = document.getElementById('loading');
             const btn = document.getElementById('generateBtn');
 
-            if (!profession || !passion) {
-                statusBox.innerText = "項目をすべて入力してくださいね！";
-                statusBox.classList.remove('hidden');
-                return;
-            }
+            if (!profession || !passion) return;
 
-            statusBox.classList.add('hidden');
             resultBox.classList.add('hidden');
             loading.classList.remove('hidden');
             btn.disabled = true;
 
             try {
-                const response = await fetch("./api/gemini", {
+                const res = await fetch("./api/gemini", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt: `あなたはプロの漫画家です。${profession}の方が「${passion}」という想いを伝えるための、心に刺さる4コマ漫画の構成案を提案してください。` })
+                    body: JSON.stringify({ prompt: `${profession}の人が「${passion}」を伝える4コマ漫画の案を作成して。` })
                 });
-
-                const data = await response.json();
+                const data = await res.json();
                 resultContent.innerText = data.text;
                 resultBox.classList.remove('hidden');
-                resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } catch (error) {
-                statusBox.innerText = "通信に失敗しました。時間をおいて再度お試しください。";
-                statusBox.classList.remove('hidden');
+            } catch (e) {
+                alert("通信エラーが発生しました。");
             } finally {
                 loading.classList.add('hidden');
                 btn.disabled = false;
             }
         });
-
         document.getElementById('lineBtn').addEventListener('click', () => {
-            window.location.href = `https://line.me/R/ti/p/${lineId}`;
+            window.location.href = "https://line.me/R/ti/p/@039irhdw";
         });
     </script>
 </body>
