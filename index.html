@@ -67,7 +67,7 @@ btn.addEventListener('click', async () => {
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify({
-                prompt: `${prof}が「${msg}」を伝える4コマ漫画を作成。各コマ40文字以内、挨拶禁止、解説禁止`
+                prompt: `${prof}が「${msg}」を伝える4コマ漫画を作成してください。各コマ40文字以内、挨拶禁止、解説禁止。ストーリー型は「困りごと→解決→効果→CTA」「あるある→気づき→提案→CTA」「比較→納得→CTA」の3パターンから最適なものを1つ選択。タイトルの##は削除してください。`
             })
         });
         if(!res.ok) throw new Error("API未応答 "+res.status);
