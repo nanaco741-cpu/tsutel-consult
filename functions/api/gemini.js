@@ -13,11 +13,9 @@ export async function onRequestPost(context) {
     });
 
     const data = await response.json();
-    // Googleからの生データをそのままフロントエンドに返します
     return new Response(JSON.stringify(data), {
       headers: { "Content-Type": "application/json" }
     });
-
   } catch (e) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
