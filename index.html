@@ -87,27 +87,43 @@
                     body: JSON.stringify({ prompt: profession + "の方が「" + passion + "」という想いを伝えるための、心に刺さる4コマ漫画の構成案を作成してください。" })
                 });
 
+                if (!res.ok) throw new Error("サーバーエラー(" + res.status + ")");
+                
                 const data = await res.json();
+                console.log("Raw Data:", data);
 
-                // 【最重要】物語を抽出するための「執念の3段構え」
-                // 1. Google Geminiの標準階層
-                // 2. サーバーで text という名前に加工された場合
-                // 3. どちらもダメなら構造そのものを少しだけ出す（デバッグ用）
-                const storyText = 
-                    (data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts && data.candidates.content.parts && data.candidates.content.parts.text)
-                    || data.text 
-                    || (data.candidates ? "データ構造が想定外です" : null);
+                // 【12時間の決着をつける抽出ロジック：何が何でも文字を拾う】
+                let storyText = "";
+                
+                // 1. ChatGPT推奨のオプショナルチェイニングによる正規ルート
+                storyText = data?.candidates?.?.content?.parts?.?.text;
+
+                // 2. もしダメなら「再帰探索」：データの中を隅々まで探し回って text キーを見つける
+                if (!storyText) {
+                    const findText = (obj) => {
+                        for (let key in obj) {
+                            if (key === 'text' && typeof obj[key] === 'string' && obj[key].length > 10) return obj[key];
+                            if (typeof obj[key] === 'object' && obj[key] !== null) {
+                                const found = findText(obj[key]);
+                                if (found) return found;
+                            }
+                        }
+                        return null;
+                    };
+                    storyText = findText(data);
+                }
 
                 if (storyText) {
                     resultContent.innerText = storyText;
                     resultBox.classList.remove('hidden');
                     resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } else {
-                    statusBox.innerText = "AIの回答を読み取れませんでした。";
+                    statusBox.innerText = "物語の解析に失敗しました。";
                     statusBox.classList.remove('hidden');
                 }
             } catch (e) {
-                statusBox.innerText = "通信エラーが発生しました。時間を置いてお試しください。";
+                console.error("Fetch error:", e);
+                statusBox.innerText = "エラー: " + e.message;
                 statusBox.classList.remove('hidden');
             } finally {
                 loading.classList.add('hidden');
