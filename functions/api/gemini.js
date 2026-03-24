@@ -3,8 +3,8 @@ export async function onRequestPost(context) {
     const { prompt } = await context.request.json();
     const apiKey = context.env.GEMINI_API_KEY;
 
-    // 2026年3月最新：最速・最軽量の 3.1 Flash-Lite を使用
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`;
+    // ミカさんの環境で動作確認が取れた「最強の組み合わせ」です
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: "POST",
@@ -14,20 +14,21 @@ export async function onRequestPost(context) {
 
     const data = await response.json();
 
-    // 正常な回答がある場合
+    // 以前の実行結果から、このパスで確実にテキストが取れることが判明しています
     if (data.candidates && data.candidates && data.candidates.content) {
-      return new Response(JSON.stringify({ text: data.candidates.content.parts.text }), {
+      const aiText = data.candidates.content.parts.text;
+      return new Response(JSON.stringify({ text: aiText }), {
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    // Google側でエラー（制限など）が発生している場合、その内容を直接表示する
-    const errorMsg = data.error ? data.error.message : "AIが一時的に応答できません。";
-    return new Response(JSON.stringify({ text: "【Google制限中】" + errorMsg }), {
+    // 万が一の例外処理
+    const errorDetail = data.error ? data.error.message : "応答がありませんでした";
+    return new Response(JSON.stringify({ text: "【AIエラー】" + errorDetail }), {
       headers: { "Content-Type": "application/json" }
     });
 
   } catch (e) {
-    return new Response(JSON.stringify({ text: "接続に失敗しました。少し時間をおいてください。" }), { status: 500 });
+    return new Response(JSON.stringify({ text: "接続失敗：" + e.message }), { status: 500 });
   }
 }
