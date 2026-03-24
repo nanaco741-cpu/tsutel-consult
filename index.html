@@ -61,6 +61,9 @@
 
     <script>
         document.getElementById('generateBtn').addEventListener('click', async () => {
+            // 1. まずクリックが反応するかアラート（動作確認後に消してもOK）
+            console.log("診断ボタンが押されました");
+
             const profession = document.getElementById('userProfession').value.trim();
             const passion = document.getElementById('userMessage').value.trim();
             const statusBox = document.getElementById('statusMessage');
@@ -84,47 +87,29 @@
                 const res = await fetch("./api/gemini", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt: profession + "の方が「" + passion + "」という想いを伝えるための、心に刺さる4コマ漫画の構成案を作成してください。" })
+                    body: JSON.stringify({ 
+                        prompt: profession + "の方が「" + passion + "」という想いを伝えるための、心に刺さる4コマ漫画の構成案を作成してください。" 
+                    })
                 });
 
-                if (!res.ok) throw new Error("サーバーエラー(" + res.status + ")");
-                
+                // ChatGPT指摘：APIが動いているかチェック
+                if (!res.ok) {
+                    throw new Error("サーバー側(API)の準備ができていないようです。ステータス: " + res.status);
+                }
+
                 const data = await res.json();
-                console.log("Raw Data:", data);
-
-                // 【12時間の決着をつける抽出ロジック：何が何でも文字を拾う】
-                let storyText = "";
                 
-                // 1. ChatGPT推奨のオプショナルチェイニングによる正規ルート
-                storyText = data?.candidates?.?.content?.parts?.?.text;
+                // ChatGPT指摘：正しい階層からテキストを取得
+                const text = data?.candidates?.?.content?.parts?.?.text || "AIからの回答がありませんでした";
 
-                // 2. もしダメなら「再帰探索」：データの中を隅々まで探し回って text キーを見つける
-                if (!storyText) {
-                    const findText = (obj) => {
-                        for (let key in obj) {
-                            if (key === 'text' && typeof obj[key] === 'string' && obj[key].length > 10) return obj[key];
-                            if (typeof obj[key] === 'object' && obj[key] !== null) {
-                                const found = findText(obj[key]);
-                                if (found) return found;
-                            }
-                        }
-                        return null;
-                    };
-                    storyText = findText(data);
-                }
+                resultContent.innerText = text;
+                resultBox.classList.remove('hidden');
+                resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-                if (storyText) {
-                    resultContent.innerText = storyText;
-                    resultBox.classList.remove('hidden');
-                    resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } else {
-                    statusBox.innerText = "物語の解析に失敗しました。";
-                    statusBox.classList.remove('hidden');
-                }
             } catch (e) {
-                console.error("Fetch error:", e);
                 statusBox.innerText = "エラー: " + e.message;
                 statusBox.classList.remove('hidden');
+                console.error(e);
             } finally {
                 loading.classList.add('hidden');
                 btn.disabled = false;
