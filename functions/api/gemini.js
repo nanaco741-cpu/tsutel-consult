@@ -13,9 +13,11 @@ export async function onRequestPost(context) {
     });
 
     const data = await response.json();
+    // 余計な加工をせず、Googleの回答をそのままフロントに投げます
     return new Response(JSON.stringify(data), {
       headers: { "Content-Type": "application/json" }
     });
+
   } catch (e) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
