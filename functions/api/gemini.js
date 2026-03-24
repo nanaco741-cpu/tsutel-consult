@@ -3,11 +3,6 @@ export async function onRequestPost(context) {
     const { prompt } = await context.request.json();
     const apiKey = context.env.GEMINI_API_KEY;
 
-    if (!apiKey) {
-      return new Response(JSON.stringify({ text: "エラー：APIキーが未設定です。" }), { status: 500 });
-    }
-
-    // URLを v1 から v1beta に変更しました
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
@@ -21,15 +16,20 @@ export async function onRequestPost(context) {
 
     const data = await response.json();
 
+    // 【診断】Googleからの生の返答をチェック
     if (data.candidates && data.candidates && data.candidates.content) {
         return new Response(JSON.stringify({ text: data.candidates.content.parts.text }), {
             headers: { "Content-Type": "application/json" }
         });
-    } 
-    
-    return new Response(JSON.stringify({ text: "AIからの応答が空でした。内容を少し変えてみてください。" }), { status: 200 });
+    }
+
+    // もしダメなら、エラーの理由（data全体）をテキストにして返す
+    const debugInfo = JSON.stringify(data);
+    return new Response(JSON.stringify({ text: "【Googleからのエラー詳細】" + debugInfo }), {
+        headers: { "Content-Type": "application/json" }
+    });
 
   } catch (e) {
-    return new Response(JSON.stringify({ text: "サーバーエラーが発生しました。" }), { status: 500 });
+    return new Response(JSON.stringify({ text: "エラー発生：" + e.message }), { status: 500 });
   }
 }
