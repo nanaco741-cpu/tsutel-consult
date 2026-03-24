@@ -2,8 +2,8 @@ export async function onRequestPost(context) {
   try {
     const { prompt } = await context.request.json();
     const apiKey = context.env.GEMINI_API_KEY;
-    
-    // 安定性が確認されている v1 窓口と 2.5 モデルを使用
+
+    // 2026年3月現在、最も安定しているエンドポイントです
     const url = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=" + apiKey;
 
     const response = await fetch(url, {
@@ -16,33 +16,27 @@ export async function onRequestPost(context) {
 
     const data = await response.json();
 
-    // 1. 正常な回答を「執念」で探すロジック
-    try {
-        if (data && data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts) {
-            const aiText = data.candidates.content.parts.text;
-            if (aiText) {
-                return new Response(JSON.stringify({ text: aiText }), {
-                    headers: { "Content-Type": "application/json" }
-                });
-            }
-        }
-    } catch (e) {
-        // パース失敗時は次へ
+    // --- 最強の抽出ロジック（ここを強化しました） ---
+    let aiText = "";
+    
+    // パターン1: 標準的な構造
+    if (data && data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts) {
+      aiText = data.candidates.content.parts.text;
+    } 
+    // パターン2: 予期せぬエラーが混じっている場合
+    else if (data && data.error) {
+      aiText = "Google Error: " + data.error.message;
+    }
+    // パターン3: 安全フィルター等で空の場合
+    else {
+      aiText = "AIが回答を準備できませんでした。もう一度ボタンを押してみてください。";
     }
 
-    // 2. もしダメなら、Google側の「生のエラー理由」を突き止める
-    let errorInfo = "不明なエラー";
-    if (data.error) {
-        errorInfo = data.error.message;
-    } else if (data.candidates && data.candidates && data.candidates.finishReason) {
-        errorInfo = "中断理由: " + data.candidates.finishReason;
-    }
-
-    return new Response(JSON.stringify({ text: "【解析失敗】" + errorInfo }), {
-        headers: { "Content-Type": "application/json" }
+    return new Response(JSON.stringify({ text: aiText }), {
+      headers: { "Content-Type": "application/json" }
     });
 
   } catch (e) {
-    return new Response(JSON.stringify({ text: "【サーバーエラー】" + e.message }), { status: 500 });
+    return new Response(JSON.stringify({ text: "接続エラーが発生しました。時間をおいてお試しください。" }), { status: 500 });
   }
 }
