@@ -4,7 +4,7 @@ export async function onRequestPost(context) {
     const apiKey = context.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      return new Response(JSON.stringify({ text: "エラー：Cloudflare側でAPIキーが設定されていません。" }), {
+      return new Response(JSON.stringify({ text: "エラー：APIキーが設定されていません。" }), {
         status: 500,
         headers: { "Content-Type": "application/json" }
       });
@@ -22,7 +22,12 @@ export async function onRequestPost(context) {
     );
 
     const data = await response.json();
-    const aiText = data.candidates?.?.content?.parts?.?.text || "AIからの応答が空でした。";
+    
+    // 安全な取り出し方（?.を使わない）
+    let aiText = "AIからの応答が空でした。";
+    if (data && data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts && data.candidates.content.parts) {
+        aiText = data.candidates.content.parts.text;
+    }
 
     return new Response(JSON.stringify({ text: aiText }), {
       headers: { "Content-Type": "application/json" }
