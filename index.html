@@ -9,18 +9,18 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
         body { font-family: 'Noto Sans JP', sans-serif; background-color: #f0f4f8; }
-        .animate-spin-custom { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .fade-in { animation: fadeIn 0.6s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-spin-custom { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="text-slate-800 pb-32">
 
-    <header class="bg-[#005088] text-white pt-16 pb-24 px-6 text-center relative">
+    <header class="bg-[#005088] text-white pt-16 pb-24 px-6 text-center relative overflow-hidden">
         <div class="relative z-10">
             <h1 class="text-3xl font-black mb-2 tracking-tight">AIコンセプト診断</h1>
-            <p class="text-[10px] opacity-70 tracking-[0.2em] font-bold uppercase">Manga Business Card Concept Tool</p>
+            <p class="text-[10px] opacity-70 tracking-[0.2em] font-bold uppercase">Manga Business Card Workshop</p>
         </div>
         <div class="absolute bottom-0 left-0 w-full h-12 bg-white rounded-t-[3rem]"></div>
     </header>
@@ -31,14 +31,14 @@
 
             <div class="space-y-8">
                 <div>
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 ml-1">Your Profession / 業種</label>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 ml-1">業種</label>
                     <input id="userProfession" type="text" placeholder="例：経営コンサルタント" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-[#005088] focus:bg-white outline-none transition-all">
                 </div>
                 <div>
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 ml-1">Your Passion / 伝えたいこと</label>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 ml-1">伝えたい想い</label>
                     <textarea id="userMessage" rows="3" placeholder="例：誰にも負けない技術でお客様を笑顔にしたい" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-[#005088] focus:bg-white outline-none transition-all"></textarea>
                 </div>
-                <button id="generateBtn" class="w-full bg-[#005088] text-white py-5 rounded-2xl font-black shadow-[0_10px_30px_rgba(0,80,136,0.3)] active:scale-95 transition-all flex items-center justify-center gap-3">
+                <button id="generateBtn" class="w-full bg-[#005088] text-white py-5 rounded-2xl font-black shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                     <span id="btnText">AI診断をスタートする</span>
                 </button>
@@ -50,7 +50,7 @@
             </div>
 
             <div id="aiResult" class="mt-12 hidden space-y-6 fade-in">
-                <div class="p-8 bg-slate-900 text-white rounded-[2rem] relative overflow-hidden shadow-2xl">
+                <div class="p-8 bg-slate-900 text-white rounded-[2rem] relative shadow-2xl">
                     <div id="aiResultContent" class="text-sm leading-relaxed whitespace-pre-wrap font-medium"></div>
                 </div>
                 <p class="text-[10px] text-slate-400 text-center font-bold">※これはAIによる下書きです。詳細は無料相談で磨き上げましょう！</p>
@@ -92,7 +92,7 @@
                 const response = await fetch("./api/gemini", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt: `あなたはプロの漫画家です。${profession}の方が「${passion}」を伝えるための、心に刺さる4コマ漫画の構成案を作成してください。` })
+                    body: JSON.stringify({ prompt: `あなたはプロの漫画家です。${profession}の方が「${passion}」という想いを伝えるための、心に刺さる4コマ漫画の構成案を提案してください。` })
                 });
 
                 const data = await response.json();
@@ -100,7 +100,7 @@
                 resultBox.classList.remove('hidden');
                 resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
             } catch (error) {
-                statusBox.innerText = "通信エラーが発生しました。時間を置いてお試しください。";
+                statusBox.innerText = "通信に失敗しました。時間をおいて再度お試しください。";
                 statusBox.classList.remove('hidden');
             } finally {
                 loading.classList.add('hidden');
