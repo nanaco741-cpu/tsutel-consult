@@ -14,19 +14,17 @@ export async function onRequestPost(context) {
 
     const data = await response.json();
 
-    // 【修正ポイント】 を確実に指定し、1段ずつ丁寧に中身を確認します
+    // 先ほどの「解析エラー」の中に表示されていた「宝の山」から、物語だけを抽出
     if (data && data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts && data.candidates.content.parts) {
-      const aiResponseText = data.candidates.content.parts.text;
-      return new Response(JSON.stringify({ text: aiResponseText }), {
+      const finalStory = data.candidates.content.parts.text;
+      return new Response(JSON.stringify({ text: finalStory }), {
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    // もしデータ構造が違った場合、原因を特定するために生データを少しだけ出します
-    const debugInfo = data.error ? data.error.message : "Structure Error";
-    return new Response(JSON.stringify({ text: "解析エラー：" + debugInfo }));
+    return new Response(JSON.stringify({ text: "AIが物語を構成できませんでした。もう一度お試しください。" }));
 
   } catch (e) {
-    return new Response(JSON.stringify({ text: "接続失敗：" + e.message }), { status: 500 });
+    return new Response(JSON.stringify({ text: "サーバーエラーが発生しました。" }), { status: 500 });
   }
 }
