@@ -3,7 +3,8 @@ export async function onRequestPost(context) {
     const { prompt } = await context.request.json();
     const apiKey = context.env.GEMINI_API_KEY;
 
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    // 2026年3月最新：最速・最軽量の 3.1 Flash-Lite を使用
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: "POST",
@@ -13,21 +14,20 @@ export async function onRequestPost(context) {
 
     const data = await response.json();
 
-    // どんな形式で返ってきても、できる限りテキストを拾い上げる「超安定」ロジック
-    let aiText = "";
-    if (data && data.candidates && data.candidates && data.candidates.content && data.candidates.content.parts) {
-        aiText = data.candidates.content.parts.text;
-    } else {
-        // AIが空で返してきた場合
-        aiText = "申し訳ありません。診断が混み合っています。もう一度「AI診断をスタートする」を押してみてください。";
+    // 正常な回答がある場合
+    if (data.candidates && data.candidates && data.candidates.content) {
+      return new Response(JSON.stringify({ text: data.candidates.content.parts.text }), {
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
-    return new Response(JSON.stringify({ text: aiText }), {
+    // Google側でエラー（制限など）が発生している場合、その内容を直接表示する
+    const errorMsg = data.error ? data.error.message : "AIが一時的に応答できません。";
+    return new Response(JSON.stringify({ text: "【Google制限中】" + errorMsg }), {
       headers: { "Content-Type": "application/json" }
     });
 
   } catch (e) {
-    // 通信自体が失敗した場合
-    return new Response(JSON.stringify({ text: "サーバーとの通信に失敗しました。時間をおいてお試しください。" }), { status: 500 });
+    return new Response(JSON.stringify({ text: "接続に失敗しました。少し時間をおいてください。" }), { status: 500 });
   }
 }
