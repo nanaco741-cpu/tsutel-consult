@@ -121,7 +121,7 @@
          * Gemini APIを呼び出す
          */
         async function callGemini(prompt) {
-            const res = await fetch("/api/gemini", {
+            const res = await fetch("./api/gemini", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
