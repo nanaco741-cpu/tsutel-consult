@@ -4,7 +4,7 @@ export async function onRequestPost(context) {
     const apiKey = context.env.GEMINI_API_KEY;
 
     const res = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + apiKey,
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -20,16 +20,14 @@ export async function onRequestPost(context) {
 
     const data = await res.json();
 
-    console.log("Geminiレスポンス:", data);
+    console.log("Gemini:", data);
 
     let text = "AIが回答できませんでした";
 
-    // ✅ 安全に取得
     if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
       text = data.candidates[0].content.parts[0].text;
     }
 
-    // ❗ エラーも表示
     if (data?.error?.message) {
       text = "APIエラー: " + data.error.message;
     }
