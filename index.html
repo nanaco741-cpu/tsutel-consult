@@ -1,96 +1,135 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AIコンセプト診断 | TSUTEL</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<style>
-body { font-family: 'Noto Sans JP', sans-serif; background-color: #f0f4f8; }
-.fade-in { animation: fadeIn 0.5s ease-out forwards; }
-@keyframes fadeIn { from {opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
-.spin { animation: spin 1s linear infinite; }
-@keyframes spin { from {transform:rotate(0deg);} to {transform:rotate(360deg);} }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIコンセプト診断 & 無料相談 | TSUTEL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .animate-spin-custom { animation: spin 1s linear infinite; }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
-<body class="pb-24 text-slate-800">
-<header class="bg-[#005088] text-white pt-16 pb-24 px-6 text-center relative overflow-hidden">
-    <h1 class="text-3xl font-black tracking-tight">AIコンセプト診断</h1>
-    <p class="text-[10px] opacity-70 font-bold uppercase tracking-widest mt-2">Manga Card Workshop by TSUTEL</p>
-    <div class="absolute bottom-0 left-0 w-full h-12 bg-white rounded-t-[3rem]"></div>
+<body class="text-slate-800 pb-32">
+
+<header class="bg-[#005088] text-white pt-12 pb-20 px-6 text-center relative overflow-hidden">
+    <div class="relative z-10">
+        <div class="mb-4 inline-block">
+            <img src="me.png" class="w-20 h-20 rounded-full border-4 border-amber-400 mx-auto object-cover shadow-lg" onerror="this.style.display='none'">
+        </div>
+        <h1 class="text-2xl font-black mb-1">AIコンセプト診断</h1>
+        <p class="text-[10px] opacity-80 tracking-widest uppercase font-bold">AI Concept Workshop by TSUTEL</p>
+    </div>
 </header>
 
-<main class="max-w-md mx-auto px-6 -mt-16 space-y-6 relative z-20">
-<section class="bg-white rounded-[2.5rem] shadow-2xl p-6 border-t-4 border-amber-400 fade-in">
-    <input id="userProfession" type="text" placeholder="業種" class="w-full p-3 mb-3 border rounded-lg text-sm focus:border-[#005088] outline-none">
-    <input id="userMessage" type="text" placeholder="伝えたい想い" class="w-full p-3 mb-3 border rounded-lg text-sm focus:border-[#005088] outline-none">
-    <button id="generateBtn" class="w-full bg-[#005088] text-white py-3 rounded-lg font-bold">AI診断をスタート</button>
+<main class="max-w-md mx-auto px-4 -mt-12 space-y-8 relative z-20">
 
-    <div id="loading" class="hidden mt-3 text-center">
-        <div class="inline-block w-6 h-6 border-4 border-[#005088] border-t-transparent rounded-full spin"></div>
-        <p class="text-[11px] text-slate-400 mt-1 font-bold">AIが構成中...</p>
+<div class="bg-white rounded-3xl shadow-xl p-8 border-b-4 border-slate-200 fade-in">
+    <h2 class="text-lg font-bold text-[#005088] mb-4 text-center">
+        あなたの「強み」を、<br><span class="text-amber-500 text-xl">4コマの物語</span>に。
+    </h2>
+</div>
+
+<section class="bg-white rounded-3xl shadow-xl p-8 border-t-4 border-amber-400 fade-in">
+
+<div id="statusMessage" class="hidden p-4 rounded-xl text-xs font-bold text-center mb-6 bg-red-100 text-red-700"></div>
+
+<div class="space-y-6">
+<input id="userProfession" type="text" placeholder="業種" class="w-full p-4 border rounded-xl">
+<textarea id="userPassion" rows="3" placeholder="伝えたいこと" class="w-full p-4 border rounded-xl"></textarea>
+
+<button id="generateBtn" class="w-full bg-[#005088] text-white py-4 rounded-xl font-black flex justify-center items-center gap-2">
+    <i class="fa-solid fa-wand-magic-sparkles"></i>
+    <span id="btnText">AI診断をスタートする</span>
+</button>
+</div>
+
+<div id="loading" class="mt-8 hidden text-center">
+    <div class="inline-block w-8 h-8 border-4 border-[#005088] border-t-transparent rounded-full animate-spin-custom"></div>
+    <p class="text-xs mt-2">AIが生成中...</p>
+</div>
+
+<div id="aiResult" class="mt-8 hidden">
+    <div class="p-6 bg-slate-900 text-white rounded-2xl">
+        <div id="aiResultContent"></div>
     </div>
-    <div id="statusMessage" class="hidden mt-3 text-red-600 text-sm text-center"></div>
-    <div id="aiResult" class="hidden mt-3 p-4 bg-slate-900 text-white rounded-lg text-sm whitespace-pre-wrap">
-        <p class="text-[10px] text-slate-400 italic mt-2">※AIによる下書きです。詳細は相談で磨きましょう！</p>
-    </div>
+</div>
+
 </section>
 </main>
 
-<div class="fixed bottom-4 left-0 w-full px-6">
-    <button id="lineBtn" class="w-full bg-[#06C755] text-white py-3 rounded-full font-bold">無料で相談する</button>
+<div class="fixed bottom-6 left-4 right-4">
+<button id="lineBtn" class="bg-[#06C755] text-white w-full py-4 rounded-full font-bold">
+無料で相談する
+</button>
 </div>
 
 <script>
-const btn = document.getElementById('generateBtn');
-btn.addEventListener('click', async () => {
-    const prof = document.getElementById('userProfession').value.trim();
-    const msg = document.getElementById('userMessage').value.trim();
-    const status = document.getElementById('statusMessage');
-    const result = document.getElementById('aiResult');
-    const loading = document.getElementById('loading');
+const lineId = "@039irhdw";
 
-    if(!prof || !msg){
-        status.innerText = "項目を入力してください";
-        status.classList.remove('hidden');
+async function generateAIConcept() {
+
+    const profession = document.getElementById('userProfession').value.trim();
+    const passion = document.getElementById('userPassion').value.trim();
+
+    const statusBox = document.getElementById('statusMessage');
+    const resultDiv = document.getElementById('aiResult');
+    const resultContent = document.getElementById('aiResultContent');
+    const loading = document.getElementById('loading');
+    const btn = document.getElementById('generateBtn');
+    const btnText = document.getElementById('btnText');
+
+    if (!profession || !passion) {
+        statusBox.innerText = "入力してください";
+        statusBox.classList.remove('hidden');
         return;
     }
 
-    status.classList.add('hidden');
-    result.classList.add('hidden');
-    loading.classList.remove('hidden');
     btn.disabled = true;
+    btnText.innerText = "思考中...";
+    loading.classList.remove('hidden');
+    resultDiv.classList.add('hidden');
 
     try {
-        const res = await fetch("./api/gemini", {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
+        const res = await fetch("/api/gemini", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                prompt: `${prof}が「${msg}」を伝える4コマ漫画を作成してください。各コマ40文字以内、挨拶禁止、解説禁止。ストーリー型は「困りごと→解決→効果→CTA」「あるある→気づき→提案→CTA」「比較→納得→CTA」の3パターンから最適なものを1つ選択。タイトルの##は削除してください。`
+                prompt: `業種:${profession}\n想い:${passion}\n4コマ構成を作成`
             })
         });
-        if(!res.ok) throw new Error("API未応答 "+res.status);
+
+        if (!res.ok) throw new Error();
 
         const data = await res.json();
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "回答なし";
 
-        result.innerText = text;
-        result.classList.remove('hidden');
-        result.scrollIntoView({behavior:"smooth", block:"center"});
-    } catch(e) {
-        status.innerText = "エラー: "+e.message;
-        status.classList.remove('hidden');
-        console.error(e);
-    } finally {
-        loading.classList.add('hidden');
-        btn.disabled = false;
+        resultContent.innerText = data.text || "生成失敗";
+        resultDiv.classList.remove('hidden');
+
+    } catch {
+        statusBox.innerText = "エラーが発生しました";
+        statusBox.classList.remove('hidden');
     }
-});
 
-document.getElementById('lineBtn').addEventListener('click',()=>{
-    window.location.href="https://line.me/R/ti/p/@039irhdw";
+    loading.classList.add('hidden');
+    btn.disabled = false;
+    btnText.innerText = "AI診断をスタートする";
+}
+
+function openLineConsult() {
+    window.location.href = `https://line.me/R/ti/p/${lineId}`;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('generateBtn').addEventListener('click', generateAIConcept);
+    document.getElementById('lineBtn').addEventListener('click', openLineConsult);
 });
 </script>
+
 </body>
 </html>
