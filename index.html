@@ -157,7 +157,9 @@ async function generateAIConcept() {
 }
 
 function openLineConsult() {
-    window.location.href = `https://line.me/R/ti/p/${lineId}`;
+    const aiText = document.getElementById('aiResultContent').innerText.trim();
+    const message = encodeURIComponent(aiText || "AI診断の結果を送ります");
+    window.location.href = `https://line.me/R/oaMessage/${lineId}/?text=${message}`;
 }
 
 window.addEventListener('DOMContentLoaded', () => {
